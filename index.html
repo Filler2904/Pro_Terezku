@@ -1,0 +1,252 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title></title>
+  <link rel="stylesheet" href="css/style.css">
+  <meta name="description" content="">
+
+  <meta property="og:title" content="">
+  <meta property="og:type" content="">
+  <meta property="og:url" content="">
+  <meta property="og:image" content="">
+  <meta property="og:image:alt" content="">
+
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon.png">
+
+  <link rel="manifest" href="site.webmanifest">
+  <meta name="theme-color" content="#fafafa">
+</head>
+
+<body>
+
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <title>Hra pro Teriii</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      background-color: black;
+      color: #00FF00;
+      font-family: monospace;
+      padding: 1rem;
+    }
+    #terminal {
+      height: 90vh;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+    input {
+      background: black;
+      border: none;
+      outline: none;
+      color: #00FF00;
+      width: 100%;
+    }
+    .red {
+      color: red;
+    }
+    .blink {
+      animation: blink 1s infinite;
+    }
+    @keyframes blink {
+      0% { opacity: 1; }
+      50% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+
+<!-- React -->
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<!-- App -->
+<script type="text/babel">
+  const { useState, useEffect, useRef } = React;
+  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+  function TerminalGame() {
+    const [output, setOutput] = useState([]);
+    const [currentInput, setCurrentInput] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [gameState, setGameState] = useState('start');
+    const terminalRef = useRef(null);
+
+    const addOutput = (text, delay = 0) => {
+      if (delay > 0) {
+        setTimeout(() => setOutput(prev => [...prev, text]), delay);
+      } else {
+        setOutput(prev => [...prev, text]);
+      }
+    };
+
+    const clearScreen = () => setOutput([]);
+
+    const loadQuestion = async (num, questionText) => {
+      setIsLoading(true);
+      clearScreen();
+      addOutput(`Načítání otázky ${num}...`);
+      await sleep(2000);
+      clearScreen();
+      await sleep(2000);
+      addOutput(questionText);
+      setIsLoading(false);
+    };
+
+    useEffect(() => {
+      startGame();
+    }, []);
+
+    useEffect(() => {
+      if (terminalRef.current) {
+        terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+      }
+    }, [output]);
+
+    const startGame = () => {
+      addOutput("Ahoj Teriii");
+      addOutput("Udělal jsem pro tebe tento program, protože tě mám moc moc rád, a protože na tebe pořád myslím :)");
+      addOutput("Chceš si zahrát hru?");
+      setGameState('confirm');
+    };
+
+    const handleInput = async (input) => {
+      const value = input.toLowerCase().trim();
+      setOutput(prev => [...prev, `> ${input}`]);
+      setCurrentInput('');
+
+      switch (gameState) {
+        case 'confirm':
+          if (value === 'ano') {
+            addOutput("Super!\nZačneme kvízem!");
+            await sleep(1500);
+            await loadQuestion(1, "Jak se jmenuje jedna holka z Vítkova, kterou mám moc moc moc rád!");
+            setGameState('q1');
+          } else {
+            addOutput("Stejně nemáš na výběr! >:)\nZačneme kvízem");
+            await sleep(2000);
+            await loadQuestion(1, "Jak se jmenuje jedna holka z Vítkova, kterou mám moc moc moc rád!");
+            setGameState('q1');
+          }
+          break;
+
+        case 'q1':
+          if (value === 'tereza') {
+            addOutput("To bylo moc lehké... Přitvrdíme >:)");
+            await sleep(2000);
+            await loadQuestion(2, "Jaká je moje oblíbená barva? - (nepoužívej háčky a čárky oki?)");
+            setGameState('q2');
+          } else {
+            addOutput("Nope");
+          }
+          break;
+
+        case 'q2':
+          if (value === 'cervena') {
+            addOutput("Jsi dobrá... Jdeme dál!");
+            await sleep(2000);
+            await loadQuestion(3, "Jaké je moje nějvetší přání - (english time)\n1-To get stepped on by you :3\n2-To marry you\n3-To spend more time with you");
+            setGameState('q3');
+          } else {
+            addOutput("Nope");
+          }
+          break;
+
+        case 'q3':
+          if (['1', '2', '3'].includes(value)) {
+            addOutput("Všechny odpovědi jsou správné :D......" +
+              (value === '1' ? "(Id love that :3)" :
+                value === '2' ? "(OFC I WANT TO MARRY MY BABY GIRL!)" :
+                  "(Id love to spend more time with you :()")
+            );
+            await sleep(3500);
+            await loadQuestion(4, "Na jaký charakter udělám s tebou cosplay? - (nápověda...Bill Cipher a S**nf**d)");
+            setGameState('q4');
+          } else {
+            addOutput("Nope");
+          }
+          break;
+
+        case 'q4':
+          if (value === 'stanford') {
+            addOutput("MHM!");
+            await sleep(2000);
+            await loadQuestion(5, "Poslední otázka Teri....\nMiluješ mě?");
+            setGameState('q5');
+          } else {
+            addOutput("Nope");
+          }
+          break;
+
+        case 'q5':
+          if (value === 'ano') {
+            clearScreen();
+            addOutput("Miluji tě taky Teri! :3");
+            addOutput(`
+  ***   ***
+ ***** *****
+*************
+ ***********
+  *********
+   *******
+    *****
+     ***
+      *
+              `);
+            setGameState('end');
+          } else {
+            addOutput(">:(");
+          }
+          break;
+      }
+    };
+
+    const handleKey = (e) => {
+      if (e.key === 'Enter' && !isLoading && gameState !== 'end') {
+        handleInput(currentInput);
+      }
+    };
+
+    return (
+      <div>
+        <div id="terminal" ref={terminalRef}>
+          {output.map((line, i) => (
+            <div key={i} className={line.includes('*') && line.trim().length < 20 ? 'red' : ''}>
+              {line}
+            </div>
+          ))}
+          {!isLoading && gameState !== 'end' && (
+            <div>
+              <input
+                value={currentInput}
+                onChange={(e) => setCurrentInput(e.target.value)}
+                onKeyDown={handleKey}
+                autoFocus
+              />
+              <span className="blink">_</span>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(<TerminalGame />);
+</script>
+</body>
+</html>
+
+</body>
+
+</html>
